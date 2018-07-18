@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import './App.css';
+import React, { Component } from 'react'
+import './App.css'
 
 class Display extends Component {
   render() {
@@ -43,38 +43,44 @@ class MinusButton extends Component {
   }
 }
 
-class Break extends Component{
+// class Break extends Component{
+//   render() {
+//     return(
+//       <div>
+//         <h3>Break</h3>
+//         <MinusButton handleMinus={this.props.handleMinus}/>
+//         <span>{this.props.breakLength}</span>
+//         <PlusButton handlePlus={this.props.handlePlus}/>
+//       </div>
+//     )
+//   }
+// }
+
+class SessionLength extends Component {
+  toggleActive(e) {
+    var labels = Array.from(document.querySelectorAll('.label'))
+
+    labels.forEach(function(label) {
+      label.classList.remove('active')
+      e.target.classList.add('active')
+    })
+  }
+
   render() {
+    var props = this.props
+    var duration = (props.id === 'pomodoro') ? props.timerLength : props.breakLength
+    // var activated = (props.id === 'pomodoro') ? 'active' : null
+
     return(
-      <div>
-        <h3>Break</h3>
-        <MinusButton handleMinus={this.props.handleMinus}/>
-        <span>{this.props.breakLength}</span>
-        <PlusButton handlePlus={this.props.handlePlus}/>
-      </div>
+      <React.Fragment>
+        <h3 className='label' onClick={this.toggleActive.bind(this)}>{props.id}</h3>
+        <MinusButton handleMinus={props.handleMinus} />
+        <span>{duration}</span>
+        <PlusButton handlePlus={props.handlePlus} />
+      </React.Fragment>
     )
   }
 }
-
-class Pomodoro extends Component{
-  render() {
-    return(
-      <div>
-        <h3>Pomodoro</h3>
-        <MinusButton 
-          // {...this.props}
-          handleMinus={this.props.handleMinus}
-        />
-        <span>{this.props.timerLength}</span>
-        <PlusButton
-          // {...this.props}
-          handlePlus={this.props.handlePlus}
-        />
-      </div>
-    )
-  }
-}
-
 
 class App extends Component {
   constructor(props) {
@@ -84,7 +90,7 @@ class App extends Component {
       time: 25,
       break: 5
     }
-  }
+  }  
 
   increment() {
     console.log('plusBtn')
@@ -101,34 +107,41 @@ class App extends Component {
   }
 
   render() {
+    var timer = {
+      timerLength: this.state.time,
+      breakLength: this.state.break
+    }
+
+    var plusMinus = {
+      handleMinus: this.decrement.bind(this),
+      handlePlus: this.increment.bind(this)
+    }
+   
     return (
-      <div className="App">
+      <main className="App">
         <header className="App-header">
           <h1 className="App-title">Pomodoro Clock</h1>
-          <p className="App-intro">Set Timer and Break Duration</p>
+          <p className="App-intro">Set Pomodoro and Break Duration</p>
         </header>
-        <Display 
-          timerLength={this.state.time}
-          breakLength={this.state.break}
-        />
-        <div className='controls'>
-          <Pomodoro 
-            {...this.props}
-            // timerLength={this.state.time}
-            // breakLength={this.state.break}
-            // handleMinus={this.decrement.bind(this)}
-            // handlePlus={this.increment.bind(this)}
-          />
-          <Break
-            timerLength={this.state.time}
-            breakLength={this.state.break}
-            handleMinus={this.decrement.bind(this)}
-            handlePlus={this.increment.bind(this)}
-          />
-        </div>
-      </div>
-    );
+
+        <Display {...timer} />
+        
+        <section className='controls'>
+          <div>
+          {/* <input name='select' type='radio'></input> */}
+            <SessionLength id='pomodoro'
+              {...timer} {...plusMinus} />
+          </div>
+          
+          <div>
+          {/* <input name='select' type='radio'></input> */}
+            <SessionLength id='break'
+            {...timer} {...plusMinus} />
+          </div>
+        </section>
+      </main>
+    )
   }
 }
 
-export default App;
+export default App

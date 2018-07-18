@@ -3,7 +3,7 @@
   max-width: 400px;
   margin: 0 auto;
   background-color: rgb(65, 65, 65);
-  color: rgb(224, 219, 219);
+  color: #e0dbdb;
   padding-bottom: 20px;
   border-radius: 3px;
 }
@@ -21,8 +21,20 @@
   justify-content: space-evenly;
 }
 
-h3 {
-  margin-bottom: 8px;
+.label {
+  text-align: center;
+  margin: 0 0 12px 0;
+  padding: 12px;
+  box-sizing: border-box;
+  font-size: 14px;
+
+}
+
+.label:hover, .active {
+  cursor: pointer;
+  color: #fff;
+  box-shadow: -1px 0 0 0 #7b6f6f, 1px 0 1px 0 #000;
+  border-radius: 5px;
 }
 
 .button {
