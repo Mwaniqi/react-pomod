@@ -15,8 +15,8 @@ class Display extends Component {
       justifyContent: 'center'
     }
 
-    return(
-      <p style={displayStyles}>{this.props.timerLength}</p>
+    return (
+      <p id='display' style={displayStyles}>{this.props.timerLength}</p>
     )
   }
 }
@@ -43,37 +43,14 @@ class MinusButton extends Component {
   }
 }
 
-// class Break extends Component{
-//   render() {
-//     return(
-//       <div>
-//         <h3>Break</h3>
-//         <MinusButton handleMinus={this.props.handleMinus}/>
-//         <span>{this.props.breakLength}</span>
-//         <PlusButton handlePlus={this.props.handlePlus}/>
-//       </div>
-//     )
-//   }
-// }
-
 class SessionLength extends Component {
-  toggleActive(e) {
-    var labels = Array.from(document.querySelectorAll('.label'))
-
-    labels.forEach(function(label) {
-      label.classList.remove('active')
-      e.target.classList.add('active')
-    })
-  }
 
   render() {
     var props = this.props
     var duration = (props.id === 'pomodoro') ? props.timerLength : props.breakLength
-    // var activated = (props.id === 'pomodoro') ? 'active' : null
 
     return(
       <React.Fragment>
-        <h3 className='label' onClick={this.toggleActive.bind(this)}>{props.id}</h3>
         <MinusButton handleMinus={props.handleMinus} />
         <span>{duration}</span>
         <PlusButton handlePlus={props.handlePlus} />
@@ -87,28 +64,43 @@ class App extends Component {
     super(props)
 
     this.state = {
-      time: 25,
+      pomodoro: 25,
       break: 5
     }
-  }  
+  }
+
+  toggleActive(e) {
+    var labels = Array.from(document.querySelectorAll('.label'))
+    var displayText = document.getElementById('display')
+
+    labels.forEach(function(label) {
+      label.classList.remove('active')
+      e.target.classList.add('active')
+    })
+
+    if(this.refs.pomodoroLabel.classList.contains('active')) {
+      displayText.textContent = this.state.pomodoro
+    } else {
+      displayText.textContent = this.state.break
+    }
+  }
 
   increment() {
-    console.log('plusBtn')
     this.setState((prevState) => {
-      return {time: prevState.time + 1}
+      return {pomodoro: prevState.pomodoro + 1}
     })
   }
 
   decrement() {
     console.log('minusBtn')
     this.setState((prevState) => {
-      return {time: prevState.time - 1}
+      return {pomodoro: prevState.pomodoro - 1}
     })
   }
 
   render() {
     var timer = {
-      timerLength: this.state.time,
+      timerLength: this.state.pomodoro,
       breakLength: this.state.break
     }
 
@@ -127,16 +119,16 @@ class App extends Component {
         <Display {...timer} />
         
         <section className='controls'>
-          <div>
-          {/* <input name='select' type='radio'></input> */}
-            <SessionLength id='pomodoro'
-              {...timer} {...plusMinus} />
+          <div id='pomodoroComp'>
+            <h3 ref='pomodoroLabel' className='label active'
+              onClick={this.toggleActive.bind(this)}>Pomodoro</h3>
+            <SessionLength id='pomodoro' {...timer} {...plusMinus} />
           </div>
           
-          <div>
-          {/* <input name='select' type='radio'></input> */}
-            <SessionLength id='break'
-            {...timer} {...plusMinus} />
+          <div id='breakComp'>
+           <h3 ref='breakLabel' className='label'
+            onClick={this.toggleActive.bind(this)}>Break</h3>
+            <SessionLength id='break' {...timer} {...plusMinus} />
           </div>
         </section>
       </main>
