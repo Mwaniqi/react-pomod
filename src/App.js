@@ -92,7 +92,6 @@ class App extends Component {
   }
 
   decrement() {
-    console.log('minusBtn')
     this.setState((prevState) => {
       return {pomodoro: prevState.pomodoro - 1}
     })
