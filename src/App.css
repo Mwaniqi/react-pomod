@@ -16,7 +16,7 @@
   font-size: 1.5em;
 }
 
-.controls {
+.mode {
   display: flex;
   justify-content: space-evenly;
 }
