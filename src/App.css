@@ -16,34 +16,56 @@
   font-size: 1.5em;
 }
 
-.mode {
-  display: flex;
-  justify-content: space-evenly;
-}
-
-.label {
-  text-align: center;
-  margin: 0 0 12px 0;
-  padding: 12px;
-  box-sizing: border-box;
-  font-size: 14px;
-
-}
-
-.label:hover, .active {
-  cursor: pointer;
-  color: #fff;
-  box-shadow: -1px 0 0 0 #7b6f6f, 1px 0 1px 0 #000;
-  border-radius: 5px;
-}
-
 .button {
-  display: inline-block;
+  border: none;
   margin: 0 12px;
   padding: 2px 8px;
   font-size: large;
+  border-radius: 3px;
 }
 
 .button:hover {
   cursor: pointer;
+}
+
+#mode {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+#mode .button {
+  font-weight: bold;
+}
+
+#controls {
+  padding: 0 12px;
+  margin-bottom: 64px;
+}
+
+#controls .button {
+  font-size: 14px;
+  margin: 8px;
+  padding: 8px 16px;
+}
+
+.mode {
+  text-align: center;
+  box-sizing: border-box;
+  padding: 12px 12px 28px;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+.active {
+  color: #fff;
+  box-shadow: -1px 0 0 0 #7b6f6f, 1px 0 1px 0 #000;
+  border-radius: 5px;
+  transition: all .25s ease-out;
+}
+
+.label:hover {
+  color: #fff;
+  cursor: pointer;
+  transition: color .2s ease-out;
+
 }
