@@ -4,12 +4,12 @@ import './App.css'
 class Display extends Component {
   render() {
     var displayStyles = {
-      width: 100,
+      width: 170,
       height: 50,
-      border: '1px solid rgb(129, 87, 87)',
+      boxShadow: 'inset 0 0 0 1px rgb(129, 87, 87)',
       borderRadius: 10,
-      margin: '64px auto',
-      padding: 32,
+      margin: '56px auto 72px auto',
+      padding: '40px 24px',
       fontSize: '72px',
       fontWeight: 'bold',
       display: 'flex',
@@ -23,7 +23,6 @@ class Display extends Component {
   }
 }
 
-
 class Button extends Component {
   render() {
     var props = this.props
@@ -36,7 +35,10 @@ class Button extends Component {
     var handler = (props.id === 'reduceSession') ? props.reduceSession
       : (props.id === 'addSession') ? props.addSession
       : (props.id === 'reduceBreak') ? props.reduceBreak
-      : props.addBreak
+      : (props.id === 'addBreak') ? props.addBreak
+      : (props.id === 'start') ? props.ticker
+      : (props.id === 'pause') ? props.pause
+      : props.reset
 
     return (
       <button className='button' onClick={handler}>{action}</button>
@@ -54,16 +56,23 @@ class App extends Component {
     }
   }
 
+  // initial duration-to-time format
+  componentWillMount() {
+    window.addEventListener('load', this.formatTime)
+  }
+
+  // duration-to-time format for every change
+  componentDidUpdate() {
+    this.formatTime()
+  }
+
   toggleActive(e) {
-    var labels = Array.from(document.querySelectorAll('.label'))
     var modes = Array.from(document.querySelectorAll('.mode'))
 
-    labels.forEach(function(label) {
-      modes.forEach((mode)=> {
-        mode.classList.remove('active')
-      })
-      e.target.parentElement.classList.add('active')
+    modes.forEach((mode) => {
+      mode.classList.remove('active')
     })
+    e.target.parentElement.classList.add('active')
   }
 
   increaseSession() {
@@ -106,8 +115,31 @@ class App extends Component {
     })
   }
 
+  formatTime(minutes) {
+    var display = document.getElementById('display')
+    minutes = Number(display.textContent)
+    var seconds = Math.floor((minutes % (1000* 60)) / 1000)
+
+    minutes = minutes < 10 ? `0${minutes}` : minutes
+    seconds = seconds < 10 ? `0${seconds}` : seconds
+    
+    display.textContent = `${minutes}:${seconds}`
+  }
+
+  ticker() {
+    console.log('start clicked')
+  }
+  
+  pause() {
+    console.log('pause clicked')
+  }
+
+  reset() {
+    console.log('reset clicked')
+  }
+
   render() {
-    var timer = {
+    var length = {
       timerLength: this.state.session,
       breakLength: this.state.break
     }
@@ -116,7 +148,10 @@ class App extends Component {
       addSession: this.increaseSession.bind(this),
       reduceSession: this.decreaseSession.bind(this),
       addBreak: this.increaseBreak.bind(this),
-      reduceBreak: this.decreaseBreak.bind(this)
+      reduceBreak: this.decreaseBreak.bind(this),
+      ticker: this.ticker.bind(this),
+      pause: this.pause.bind(this),
+      reset: this.reset.bind(this)
     }
 
     return (
@@ -140,15 +175,15 @@ class App extends Component {
             <Button action='down' {...plusMinus} id='reduceBreak'/>
             <span>{this.state.break}</span>
             <Button action='up' {...plusMinus} id='addBreak'/>
+
           </div>
         </section>
-
-        <Display {...timer} />
+        <Display {...length} />
 
         <section id='controls'>
-          <Button action='start'/>
-          <Button action='pause'/>
-          <Button action='reset'/>
+          <Button action='start' {...plusMinus} id='start'/>
+          <Button action='pause' {...plusMinus} id='pause'/>
+          <Button action='reset' {...plusMinus} id='reset'/>
         </section>        
       </main>
     )

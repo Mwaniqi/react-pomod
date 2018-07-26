@@ -1,11 +1,12 @@
 .App {
   text-align: center;
   max-width: 400px;
+  min-height: 100vh;
   margin: 0 auto;
   background-color: rgb(65, 65, 65);
   color: #e0dbdb;
   padding-bottom: 20px;
-  border-radius: 3px;
+  letter-spacing: 2px;
 }
 
 .App-header {
@@ -13,7 +14,7 @@
 }
 
 .App-title {
-  font-size: 1.5em;
+  font-size: 1.8em;
 }
 
 .button {
@@ -22,19 +23,27 @@
   padding: 2px 8px;
   font-size: large;
   border-radius: 3px;
+  transition: all .2s ease-out;
 }
 
 .button:hover {
   cursor: pointer;
 }
 
+#mode .button {
+  color: #9c9c9c;
+  background: #414141;
+  font-weight: bold;
+}
+
+#mode .button:hover {
+  background-color: #e0dbdb;
+  color: #414141;
+}
+
 #mode {
   display: flex;
   justify-content: space-evenly;
-}
-
-#mode .button {
-  font-weight: bold;
 }
 
 #controls {
@@ -49,11 +58,11 @@
 }
 
 .mode {
-  text-align: center;
   box-sizing: border-box;
-  padding: 12px 12px 28px;
-  box-sizing: border-box;
+  color: #9c9c9c;
   font-size: 14px;
+  padding: 12px 12px 28px;
+  text-align: center;
 }
 
 .active {
@@ -67,5 +76,4 @@
   color: #fff;
   cursor: pointer;
   transition: color .2s ease-out;
-
 }
