@@ -10,7 +10,7 @@ class Display extends Component {
       borderRadius: 10,
       margin: '56px auto 72px auto',
       padding: '40px 24px',
-      fontSize: '72px',
+      fontSize: '62px',
       fontWeight: 'bold',
       display: 'flex',
       alignItems: 'center',
@@ -18,7 +18,7 @@ class Display extends Component {
     }
 
     return (
-      <p id='display' style={displayStyles}>{this.props.timerLength}</p>
+      <p id='display' style={displayStyles}>{this.props.sessionLength}</p>
     )
   }
 }
@@ -56,23 +56,31 @@ class App extends Component {
     }
   }
 
-  // initial duration-to-time format
-  componentWillMount() {
-    window.addEventListener('load', this.formatTime)
+  // initial display-to-time format
+  componentDidMount() {
+    var display = document.getElementById('display')
+
+    display.textContent = `${display.textContent}:00`
   }
 
-  // duration-to-time format for every change
+  // display-to-time format for every duration change
   componentDidUpdate() {
     this.formatTime()
   }
 
   toggleActive(e) {
     var modes = Array.from(document.querySelectorAll('.mode'))
+    var display = document.getElementById('display')
+    var parentEl = e.target.parentElement
 
     modes.forEach((mode) => {
       mode.classList.remove('active')
     })
-    e.target.parentElement.classList.add('active')
+    parentEl.classList.add('active')
+    display.textContent = parentEl.children[2].textContent
+    display.dataset.mode = parentEl.children[0].textContent.toLowerCase()
+
+    this.formatTime()
   }
 
   increaseSession() {
@@ -116,18 +124,59 @@ class App extends Component {
   }
 
   formatTime(minutes) {
+    var mode = document.querySelector('.active')
     var display = document.getElementById('display')
-    minutes = Number(display.textContent)
-    var seconds = Math.floor((minutes % (1000* 60)) / 1000)
 
-    minutes = minutes < 10 ? `0${minutes}` : minutes
-    seconds = seconds < 10 ? `0${seconds}` : seconds
+    if (mode.id === 'pomodoro') {
+      minutes = this.state.session
+    } else {
+      minutes = this.state.break
+    }
+
+    var seconds = Math.floor((minutes % (1000* 60)) / 1000)
+    var mins = minutes < 10 ? `0${minutes}` : minutes
+    var secs = seconds < 10 ? `0${seconds}` : seconds
     
-    display.textContent = `${minutes}:${seconds}`
+    display.textContent = `${mins}:${secs}`
   }
 
-  ticker() {
-    console.log('start clicked')
+  ticker(duration) {
+    var active = document.querySelector('.active')
+    var pomodoro = document.getElementById('pomodoro')
+    var rest = document.getElementById('break')
+    var startTime = new Date().getTime()
+
+    if (active.id === 'pomodoro') {
+      duration = this.state.session * 60
+    } else {
+      duration = this.state.break * 60
+    }
+
+    setInterval(() => {
+      var endTime = startTime + duration
+
+      console.log('startTime', startTime)
+      console.log('endTime', endTime)
+      console.log('length', duration)
+
+      if (duration > 0) {
+        duration--
+      } else {
+        pomodoro.classList.remove('active')
+        rest.classList.add('active')
+        duration = this.state.break * 60
+        this.ticker(duration)
+      }
+
+      var minutes = Math.floor(duration / 60, 10);
+      var seconds = Math.floor(duration % 60, 10);
+
+      var display = document.getElementById('display')
+      var mins = minutes < 10 ? `0${minutes}` : minutes
+      var secs = seconds < 10 ? `0${seconds}` : seconds
+      
+      display.textContent = `${mins}:${secs}`
+    }, 1000)
   }
   
   pause() {
@@ -135,12 +184,15 @@ class App extends Component {
   }
 
   reset() {
-    console.log('reset clicked')
+    this.setState({
+        session: 25,
+        break:5
+    })
   }
 
   render() {
     var length = {
-      timerLength: this.state.session,
+      sessionLength: this.state.session,
       breakLength: this.state.break
     }
 
@@ -161,16 +213,16 @@ class App extends Component {
         </header>
 
         <section id='mode'>
-          <div id='pomodoroLength' className='mode active'>
-            <h3 ref='pomodoroLabel' className='label'
+          <div id='pomodoro' className='mode active'>
+            <h3 className='label'
               onClick={this.toggleActive.bind(this)}>Pomodoro</h3>
             <Button action='down' {...plusMinus} id='reduceSession'/>
             <span>{this.state.session}</span>
             <Button action='up' {...plusMinus} id='addSession'/>
           </div>
 
-          <div id='breakLength' className='mode'>
-            <h3 ref='pomodoroLabel' className='label'
+          <div id='break' className='mode'>
+            <h3 className='label'
               onClick={this.toggleActive.bind(this)}>Break</h3>
             <Button action='down' {...plusMinus} id='reduceBreak'/>
             <span>{this.state.break}</span>
