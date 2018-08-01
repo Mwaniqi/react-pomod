@@ -49,10 +49,10 @@ class Button extends Component {
 class App extends Component {
   constructor(props) {
     super(props)
-
+    
     this.state = {
-      session: 25,
-      break: 5
+      session: 1,
+      break: 1
     }
   }
 
@@ -63,7 +63,7 @@ class App extends Component {
     display.textContent = `${display.textContent}:00`
   }
 
-  // display-to-time format for every duration change
+  // format display to time for every duration change
   componentDidUpdate() {
     this.formatTime()
   }
@@ -122,10 +122,17 @@ class App extends Component {
       }
     })
   }
+  
+  padNum(minutes, seconds) {
+    var display = document.getElementById('display')
+    var mins = minutes < 10 ? `0${minutes}` : minutes
+    var secs = seconds < 10 ? `0${seconds}` : seconds
+
+    display.textContent = `${mins}:${secs}`
+  }
 
   formatTime(minutes) {
     var mode = document.querySelector('.active')
-    var display = document.getElementById('display')
 
     if (mode.id === 'pomodoro') {
       minutes = this.state.session
@@ -134,53 +141,53 @@ class App extends Component {
     }
 
     var seconds = Math.floor((minutes % (1000* 60)) / 1000)
-    var mins = minutes < 10 ? `0${minutes}` : minutes
-    var secs = seconds < 10 ? `0${seconds}` : seconds
-    
-    display.textContent = `${mins}:${secs}`
+    this.padNum(minutes, seconds)
+
   }
 
-  ticker(duration) {
+  ticker() {
     var active = document.querySelector('.active')
     var pomodoro = document.getElementById('pomodoro')
     var rest = document.getElementById('break')
-    var startTime = new Date().getTime()
+    var duration
 
     if (active.id === 'pomodoro') {
       duration = this.state.session * 60
-    } else {
+    } else { 
       duration = this.state.break * 60
     }
-
-    setInterval(() => {
-      var endTime = startTime + duration
-
-      console.log('startTime', startTime)
-      console.log('endTime', endTime)
-      console.log('length', duration)
-
+  
+    this.ticker.timer = { running : setInterval(() => {
       if (duration > 0) {
         duration--
-      } else {
+        // this.setState({session: duration})
+      }
+
+      if (duration === 0 && active.id === 'pomodoro') {
         pomodoro.classList.remove('active')
         rest.classList.add('active')
-        duration = this.state.break * 60
-        this.ticker(duration)
+        clearInterval(this.ticker.timer.running)
+        this.ticker()
+      }
+
+      if (duration === 0 && active.id === 'break') {
+        console.log(this.ticker.timer.running)
+        rest.classList.remove('active')
+        pomodoro.classList.add('active')
+        clearInterval(this.ticker.timer.running)
       }
 
       var minutes = Math.floor(duration / 60, 10);
       var seconds = Math.floor(duration % 60, 10);
 
-      var display = document.getElementById('display')
-      var mins = minutes < 10 ? `0${minutes}` : minutes
-      var secs = seconds < 10 ? `0${seconds}` : seconds
-      
-      display.textContent = `${mins}:${secs}`
-    }, 1000)
+      this.padNum(minutes, seconds)
+    }, 1000)}
   }
   
   pause() {
     console.log('pause clicked')
+    clearInterval(this.ticker.timer.running)
+    console.log(this.state)
   }
 
   reset() {
@@ -216,6 +223,7 @@ class App extends Component {
           <div id='pomodoro' className='mode active'>
             <h3 className='label'
               onClick={this.toggleActive.bind(this)}>Pomodoro</h3>
+              {/* spread operator to pass multiple props*/}
             <Button action='down' {...plusMinus} id='reduceSession'/>
             <span>{this.state.session}</span>
             <Button action='up' {...plusMinus} id='addSession'/>
