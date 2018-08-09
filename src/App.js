@@ -16,9 +16,9 @@ class Display extends Component {
       alignItems: 'center',
       justifyContent: 'center'
     }
-
+    
     return (
-      <p id='display' style={displayStyles}>{this.props.sessionLength}</p>
+      <p id='display' style={displayStyles}>{this.props.remaining / 60}</p>
     )
   }
 }
@@ -51,16 +51,17 @@ class App extends Component {
     super(props)
     
     this.state = {
-      session: 1,
-      break: 1
+      session: 25,
+      break: 5,
+      remaining: 1500,
+      running: false,
+      paused: false
     }
   }
 
   // initial display-to-time format
   componentDidMount() {
-    var display = document.getElementById('display')
-
-    display.textContent = `${display.textContent}:00`
+    this.formatTime()
   }
 
   // format display to time for every duration change
@@ -68,141 +69,114 @@ class App extends Component {
     this.formatTime()
   }
 
-  toggleActive(e) {
-    var modes = Array.from(document.querySelectorAll('.mode'))
-    var display = document.getElementById('display')
-    var parentEl = e.target.parentElement
+  // mode toggle
+  toggleActive() {
+    var modes = document.querySelectorAll('.mode')
 
     modes.forEach((mode) => {
-      mode.classList.remove('active')
+      mode.classList.toggle('active')
     })
-    parentEl.classList.add('active')
-    display.textContent = parentEl.children[2].textContent
-    display.dataset.mode = parentEl.children[0].textContent.toLowerCase()
-
-    this.formatTime()
   }
 
   increaseSession() {
-    this.setState((prevState) => {
-      if (prevState.session < 60) {
-        return {session: prevState.session + 1}
-      } else {
-        return {session: prevState.session}
-      }
-    })
+    if(this.state.running) { return }
+
+    if (this.state.session < 60) {
+      this.setState({session: this.state.session + 1,
+        remaining: (this.state.session + 1) * 60})
+    } else { return }
   }
 
   decreaseSession() {
-    this.setState((prevState) => {
-      if (prevState.session > 1) {
-        return {session: prevState.session - 1}
-      } else {
-        return {session: prevState.session}
-      }
-    })
+    if(this.state.running) { return }
+
+    if (this.state.session > 1) {
+      this.setState({session: this.state.session - 1,
+        remaining: (this.state.session - 1) * 60})
+    } else { return }
   }
 
   increaseBreak() {
-    this.setState((prevState) => {
-      if (prevState.break < 60) {
-        return {break: prevState.break + 1}
-      } else {
-        return {break: prevState.break}
-      }
-    })
+    if(this.state.running) { return }
+
+    if (this.state.break < 60) {
+      this.setState({break: this.state.break + 1,
+       remaining: (this.state.break + 1) * 60})
+    } else { return }
   }
 
   decreaseBreak() {
-    this.setState((prevState) => {
-      if (prevState.break > 1) {
-        return {break: prevState.break - 1}
-      } else {
-        return {break: prevState.break}
-      }
-    })
+    if(this.state.running) { return }
+
+    if (this.state.break > 1) {
+      this.setState({break: this.state.break - 1,
+        remaining: (this.state.break - 1) * 60})
+    } else { return }
   }
-  
-  padNum(minutes, seconds) {
-    var display = document.getElementById('display')
+
+  formatTime() {
+    var duration = this.state.remaining
+    var minutes = Math.floor(duration / 60, 10)
+    var seconds = Math.floor(duration % 60, 10)
     var mins = minutes < 10 ? `0${minutes}` : minutes
     var secs = seconds < 10 ? `0${seconds}` : seconds
+    var display = document.getElementById('display')
 
     display.textContent = `${mins}:${secs}`
   }
 
-  formatTime(minutes) {
-    var mode = document.querySelector('.active')
-
-    if (mode.id === 'pomodoro') {
-      minutes = this.state.session
-    } else {
-      minutes = this.state.break
-    }
-
-    var seconds = Math.floor((minutes % (1000* 60)) / 1000)
-    this.padNum(minutes, seconds)
-
-  }
-
   ticker() {
     var active = document.querySelector('.active')
-    var pomodoro = document.getElementById('pomodoro')
-    var rest = document.getElementById('break')
-    var duration
+    
+    this.setState({running: true})
 
-    if (active.id === 'pomodoro') {
-      duration = this.state.session * 60
-    } else { 
-      duration = this.state.break * 60
+    if (this.state.paused) {
+      this.setState({paused: false, remaining: this.state.remaining})
+    } else if (active.id === 'pomodoro') {
+      this.setState({remaining: this.state.session * 60})
+    } else {
+      this.setState({remaining: this.state.break * 60})
     }
   
     this.ticker.timer = { running : setInterval(() => {
+      var duration = this.state.remaining
+
       if (duration > 0) {
         duration--
-        // this.setState({session: duration})
+      
+        this.setState({remaining: duration})
       }
 
+      // end of session
       if (duration === 0 && active.id === 'pomodoro') {
-        pomodoro.classList.remove('active')
-        rest.classList.add('active')
         clearInterval(this.ticker.timer.running)
+        this.toggleActive()
         this.ticker()
       }
 
+      // end of break
       if (duration === 0 && active.id === 'break') {
-        console.log(this.ticker.timer.running)
-        rest.classList.remove('active')
-        pomodoro.classList.add('active')
         clearInterval(this.ticker.timer.running)
+        this.toggleActive()
+        this.setState({running: false})
+        return
       }
 
-      var minutes = Math.floor(duration / 60, 10);
-      var seconds = Math.floor(duration % 60, 10);
-
-      this.padNum(minutes, seconds)
     }, 1000)}
   }
   
   pause() {
-    console.log('pause clicked')
     clearInterval(this.ticker.timer.running)
-    console.log(this.state)
+    this.setState({running: false, paused: true})
   }
 
   reset() {
-    this.setState({
-        session: 25,
-        break:5
-    })
+    clearInterval(this.ticker.timer.running)
+    this.setState(
+      {session: 25, break: 5, remaining: 1500, running: false} )
   }
 
   render() {
-    var length = {
-      sessionLength: this.state.session,
-      breakLength: this.state.break
-    }
-
     var plusMinus = {
       addSession: this.increaseSession.bind(this),
       reduceSession: this.decreaseSession.bind(this),
@@ -225,7 +199,7 @@ class App extends Component {
               onClick={this.toggleActive.bind(this)}>Pomodoro</h3>
               {/* spread operator to pass multiple props*/}
             <Button action='down' {...plusMinus} id='reduceSession'/>
-            <span>{this.state.session}</span>
+            <span >{this.state.session}</span>
             <Button action='up' {...plusMinus} id='addSession'/>
           </div>
 
@@ -238,7 +212,7 @@ class App extends Component {
 
           </div>
         </section>
-        <Display {...length} />
+        <Display remaining={this.state.remaining}/>
 
         <section id='controls'>
           <Button action='start' {...plusMinus} id='start'/>
